@@ -176,11 +176,11 @@ const LiveTicker = () => {
   // Duplicate articles for seamless infinite scroll
   const duplicated = [...tickerArticles, ...tickerArticles];
 
-  // Total width of one set (340px card + 16px gap) × count
-  const singleSetWidth = tickerArticles.length * (340 + 16);
+  // Use a reasonable average card width for animation calculation
+  const singleSetWidth = tickerArticles.length * (300 + 16);
 
   return (
-    <section className="py-12 md:py-16 border-y border-border/50 bg-card/30 overflow-hidden">
+    <section className="py-8 sm:py-12 md:py-16 border-y border-border/50 bg-card/30 overflow-hidden">
       <div className="container mb-8">
         <motion.div
           initial={{ opacity: 0, y: 12 }}
