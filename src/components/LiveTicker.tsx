@@ -181,13 +181,13 @@ const LiveTicker = () => {
 
   return (
     <section className="py-8 sm:py-12 md:py-16 border-y border-border/50 bg-card/30 overflow-hidden">
-      <div className="container mb-8">
+      <div className="container mb-5 sm:mb-8 px-4 sm:px-6">
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="flex items-center justify-between"
+          className="flex items-center justify-between gap-3"
         >
           <div className="flex items-center gap-3">
             <LivePulse />
