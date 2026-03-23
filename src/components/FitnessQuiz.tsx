@@ -19,6 +19,10 @@ import {
   CheckCircle2,
   Sparkles,
   ExternalLink,
+  ChevronRight,
+  Activity,
+  Footprints,
+  Gauge,
 } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
@@ -30,6 +34,8 @@ interface QuizOption {
   value: string;
   icon: React.ReactNode;
   description: string;
+  visual: string; // gradient class for each option card
+  stat?: string; // micro-stat shown on the card
 }
 
 interface QuizStep {
@@ -65,26 +71,34 @@ const quizSteps: QuizStep[] = [
       {
         label: "Burn Fat",
         value: "weight-loss",
-        icon: <Flame className="w-6 h-6" />,
+        icon: <Flame className="w-7 h-7" />,
         description: "Shed body fat while preserving lean muscle mass",
+        visual: "from-orange-600/20 to-red-700/20",
+        stat: "Avg -2lb/week",
       },
       {
         label: "Build Muscle",
         value: "muscle",
-        icon: <Dumbbell className="w-6 h-6" />,
+        icon: <Dumbbell className="w-7 h-7" />,
         description: "Grow stronger with hypertrophy-focused training",
+        visual: "from-blue-600/20 to-indigo-700/20",
+        stat: "+1lb LBM/mo",
       },
       {
         label: "Run Faster & Farther",
         value: "endurance",
-        icon: <Wind className="w-6 h-6" />,
+        icon: <Wind className="w-7 h-7" />,
         description: "Boost VO2 max, race times, and cardio endurance",
+        visual: "from-emerald-600/20 to-teal-700/20",
+        stat: "+3-5 VO2 pts",
       },
       {
         label: "Optimize Health",
         value: "health",
-        icon: <Heart className="w-6 h-6" />,
+        icon: <Heart className="w-7 h-7" />,
         description: "Longevity, recovery, and overall wellness",
+        visual: "from-pink-600/20 to-rose-700/20",
+        stat: "Holistic",
       },
     ],
   },
@@ -95,20 +109,26 @@ const quizSteps: QuizStep[] = [
       {
         label: "Just Starting Out",
         value: "beginner",
-        icon: <Sprout className="w-6 h-6" />,
+        icon: <Sprout className="w-7 h-7" />,
         description: "Less than 6 months of consistent training",
+        visual: "from-lime-600/20 to-green-700/20",
+        stat: "0–6 months",
       },
       {
         label: "Building Momentum",
         value: "intermediate",
-        icon: <Zap className="w-6 h-6" />,
+        icon: <Zap className="w-7 h-7" />,
         description: "6–24 months of regular activity",
+        visual: "from-amber-600/20 to-yellow-700/20",
+        stat: "6–24 months",
       },
       {
         label: "Seasoned Athlete",
         value: "advanced",
-        icon: <Trophy className="w-6 h-6" />,
+        icon: <Trophy className="w-7 h-7" />,
         description: "2+ years of dedicated training",
+        visual: "from-purple-600/20 to-violet-700/20",
+        stat: "2+ years",
       },
     ],
   },
@@ -119,33 +139,41 @@ const quizSteps: QuizStep[] = [
       {
         label: "Training Programs",
         value: "workouts",
-        icon: <ClipboardList className="w-6 h-6" />,
+        icon: <ClipboardList className="w-7 h-7" />,
         description: "Structured routines, HIIT, strength splits",
+        visual: "from-cyan-600/20 to-blue-700/20",
+        stat: "12+ plans",
       },
       {
         label: "Nutrition Science",
         value: "nutrition",
-        icon: <Salad className="w-6 h-6" />,
+        icon: <Salad className="w-7 h-7" />,
         description: "Macros, meal plans, supplement guides",
+        visual: "from-green-600/20 to-emerald-700/20",
+        stat: "Science-backed",
       },
       {
         label: "Gear & Reviews",
         value: "gear",
-        icon: <Star className="w-6 h-6" />,
+        icon: <Star className="w-7 h-7" />,
         description: "Tested shoes, watches, headphones, and more",
+        visual: "from-orange-600/20 to-amber-700/20",
+        stat: "50+ reviews",
       },
       {
         label: "Fitness Calculators",
         value: "calculators",
-        icon: <Calculator className="w-6 h-6" />,
+        icon: <Calculator className="w-7 h-7" />,
         description: "BMI, TDEE, body fat, macros — crunch the numbers",
+        visual: "from-fuchsia-600/20 to-pink-700/20",
+        stat: "16 tools",
       },
     ],
   },
 ];
 
 /* ------------------------------------------------------------------ */
-/*  Recommendation engine                                              */
+/*  Recommendation engine (unchanged logic, same 16 paths)            */
 /* ------------------------------------------------------------------ */
 
 const getRecommendation = (answers: string[]): Recommendation => {
@@ -197,7 +225,7 @@ const getRecommendation = (answers: string[]): Recommendation => {
       title: "Your Weight Loss Gear Essentials",
       subtitle: `Tailored for ${levelLabel} looking for the right tools`,
       description:
-        "The right gear keeps you accountable. A quality smartwatch tracks calories burned, a good pair of shoes prevents injury, and proper nutrition tools make meal prep effortless.",
+        "The right gear keeps you accountable. A quality smartwatch tracks calories burned, a good pair of shoes prevents injury.",
       tip: "A fitness tracker alone won't lose weight — pair it with a calorie target from our TDEE calculator.",
       links: [
         { label: "Huawei Watch GT Runner 2 Review", url: "https://gearuptofit.com/review/huawei-watch-gt-runner-2/", tag: "Top Pick" },
@@ -442,41 +470,122 @@ const getRecommendation = (answers: string[]): Recommendation => {
 };
 
 /* ------------------------------------------------------------------ */
-/*  Step indicators                                                    */
+/*  Animated progress bar                                              */
 /* ------------------------------------------------------------------ */
 
-const StepIndicator = ({ current, total, showResults }: { current: number; total: number; showResults: boolean }) => (
-  <div className="flex items-center justify-center gap-2 mb-10">
-    {Array.from({ length: total }).map((_, i) => {
-      const done = showResults || i < current;
-      const active = !showResults && i === current;
-      return (
-        <div key={i} className="flex items-center gap-2">
+const ProgressBar = ({ current, total, showResults }: { current: number; total: number; showResults: boolean }) => {
+  const progress = showResults ? 100 : (current / total) * 100;
+  return (
+    <div className="relative mb-12">
+      {/* Track */}
+      <div className="h-1 bg-border rounded-full overflow-hidden">
+        <motion.div
+          className="h-full bg-primary rounded-full"
+          animate={{ width: `${progress}%` }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        />
+      </div>
+      {/* Step markers */}
+      <div className="flex justify-between mt-3">
+        {Array.from({ length: total }).map((_, i) => {
+          const done = showResults || i < current;
+          const active = !showResults && i === current;
+          return (
+            <div key={i} className="flex flex-col items-center gap-1.5">
+              <motion.div
+                animate={{
+                  scale: active ? 1.2 : 1,
+                  backgroundColor: done
+                    ? "hsl(var(--primary))"
+                    : active
+                    ? "hsl(var(--primary))"
+                    : "hsl(var(--border))",
+                }}
+                className="w-3 h-3 rounded-full"
+                transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              >
+                {done && (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="w-full h-full flex items-center justify-center"
+                  >
+                    <CheckCircle2 className="w-3 h-3 text-primary-foreground" />
+                  </motion.div>
+                )}
+              </motion.div>
+              <span className={`text-[10px] font-display uppercase tracking-widest ${
+                active ? "text-primary font-bold" : done ? "text-primary/60" : "text-muted-foreground"
+              }`}>
+                {i === 0 ? "Goal" : i === 1 ? "Level" : "Focus"}
+              </span>
+            </div>
+          );
+        })}
+        {/* Completion marker */}
+        <div className="flex flex-col items-center gap-1.5">
           <motion.div
             animate={{
-              width: active ? 32 : 10,
-              backgroundColor: done
-                ? "hsl(0 72% 50%)"
-                : active
-                ? "hsl(0 72% 50%)"
-                : "hsl(0 0% 20%)",
+              scale: showResults ? 1.2 : 1,
+              backgroundColor: showResults ? "hsl(var(--primary))" : "hsl(var(--border))",
             }}
-            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-            className="h-2.5 rounded-full"
+            className="w-3 h-3 rounded-full"
+            transition={{ duration: 0.3 }}
           />
+          <span className={`text-[10px] font-display uppercase tracking-widest ${
+            showResults ? "text-primary font-bold" : "text-muted-foreground"
+          }`}>
+            Results
+          </span>
         </div>
-      );
-    })}
-    {showResults && (
-      <motion.div
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        transition={{ type: "spring", stiffness: 400, damping: 15 }}
-      >
-        <CheckCircle2 className="w-5 h-5 text-primary ml-1" />
-      </motion.div>
-    )}
-  </div>
+      </div>
+    </div>
+  );
+};
+
+/* ------------------------------------------------------------------ */
+/*  Floating metric cards around quiz                                  */
+/* ------------------------------------------------------------------ */
+
+const FloatingMetrics = () => (
+  <>
+    <motion.div
+      initial={{ opacity: 0, x: -20 }}
+      whileInView={{ opacity: 1, x: 0 }}
+      viewport={{ once: true }}
+      transition={{ delay: 0.8, duration: 0.6 }}
+      className="hidden xl:flex absolute left-8 top-1/3 flex-col gap-2 items-center"
+    >
+      <div className="bg-card border border-border rounded-sm p-3 shadow-lg">
+        <Activity className="w-5 h-5 text-primary mb-1" />
+        <div className="text-lg font-bold font-display text-primary">47.2</div>
+        <div className="text-[9px] uppercase tracking-widest text-muted-foreground font-display">VO2 Max</div>
+      </div>
+      <div className="bg-card border border-border rounded-sm p-3 shadow-lg">
+        <Footprints className="w-5 h-5 text-emerald-500 mb-1" />
+        <div className="text-lg font-bold font-display text-emerald-500">8,420</div>
+        <div className="text-[9px] uppercase tracking-widest text-muted-foreground font-display">Steps/day</div>
+      </div>
+    </motion.div>
+    <motion.div
+      initial={{ opacity: 0, x: 20 }}
+      whileInView={{ opacity: 1, x: 0 }}
+      viewport={{ once: true }}
+      transition={{ delay: 1, duration: 0.6 }}
+      className="hidden xl:flex absolute right-8 top-1/4 flex-col gap-2 items-center"
+    >
+      <div className="bg-card border border-border rounded-sm p-3 shadow-lg">
+        <Gauge className="w-5 h-5 text-amber-500 mb-1" />
+        <div className="text-lg font-bold font-display text-amber-500">1,847</div>
+        <div className="text-[9px] uppercase tracking-widest text-muted-foreground font-display">TDEE</div>
+      </div>
+      <div className="bg-card border border-border rounded-sm p-3 shadow-lg">
+        <Flame className="w-5 h-5 text-primary mb-1" />
+        <div className="text-lg font-bold font-display text-primary">18.4%</div>
+        <div className="text-[9px] uppercase tracking-widest text-muted-foreground font-display">Body Fat</div>
+      </div>
+    </motion.div>
+  </>
 );
 
 /* ------------------------------------------------------------------ */
@@ -503,7 +612,7 @@ const FitnessQuiz = () => {
         } else {
           setShowResults(true);
         }
-      }, 400);
+      }, 450);
     },
     [step, answers],
   );
@@ -528,109 +637,181 @@ const FitnessQuiz = () => {
   );
 
   return (
-    <section id="quiz" className="py-24 md:py-36 relative overflow-hidden">
-      {/* Ambient background */}
-      <div className="absolute inset-0">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-primary/[0.04] rounded-full blur-[100px]" />
-        <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-primary/[0.03] rounded-full blur-[80px]" />
+    <section id="quiz" className="py-28 md:py-40 relative overflow-hidden">
+      {/* Dramatic ambient background */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[600px] bg-primary/[0.03] rounded-full blur-[120px]" />
+        <div className="absolute top-20 right-1/4 w-[300px] h-[300px] bg-primary/[0.05] rounded-full blur-[80px]" />
+        <div className="absolute bottom-20 left-1/4 w-[250px] h-[250px] bg-primary/[0.04] rounded-full blur-[80px]" />
+        {/* Grid lines for tech feel */}
+        <div className="absolute inset-0 opacity-[0.02]"
+          style={{
+            backgroundImage: `linear-gradient(hsl(var(--foreground)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--foreground)) 1px, transparent 1px)`,
+            backgroundSize: "60px 60px",
+          }}
+        />
       </div>
+
+      <FloatingMetrics />
 
       <div className="container relative z-10">
         {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: 16, filter: "blur(4px)" }}
+          initial={{ opacity: 0, y: 20, filter: "blur(6px)" }}
           whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
           viewport={{ once: true, amount: 0.2 }}
-          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="text-center mb-4"
+          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          className="text-center mb-6"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 rounded-sm mb-5">
-            <Target className="w-4 h-4 text-primary" />
-            <span className="text-xs font-semibold tracking-widest uppercase text-primary font-display">
-              30-Second Fitness Quiz
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            whileInView={{ scale: 1, opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.15, duration: 0.5 }}
+            className="inline-flex items-center gap-2.5 px-5 py-2.5 bg-primary/10 border border-primary/25 rounded-sm mb-6"
+          >
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
             </span>
-          </div>
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold uppercase tracking-tight font-display mb-4 leading-[0.92]">
-            Cut the Clutter.{" "}
-            <span className="text-gradient-red block mt-1">Find Your Path.</span>
+            <span className="text-xs font-bold tracking-[0.25em] uppercase text-primary font-display">
+              Interactive · 30 Seconds · Free
+            </span>
+          </motion.div>
+
+          <h2 className="text-5xl md:text-6xl lg:text-7xl font-bold uppercase tracking-tight font-display mb-5 leading-[0.88]">
+            Stop Guessing.{" "}
+            <span className="text-gradient-red block mt-2">Start Training.</span>
           </h2>
-          <p className="text-muted-foreground text-base md:text-lg font-body max-w-lg mx-auto leading-relaxed">
-            3 questions. Zero fluff. Get a personalized roadmap with articles, calculators, and tools matched to your exact goals.
+          <p className="text-muted-foreground text-base md:text-lg font-body max-w-xl mx-auto leading-relaxed">
+            Answer 3 quick questions. Get a precision-matched roadmap with the exact articles, calculators, and tools for <strong className="text-foreground">your</strong> goals.
           </p>
+
+          {/* Social proof */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.4, duration: 0.5 }}
+            className="flex items-center justify-center gap-6 mt-6 text-xs text-muted-foreground font-display uppercase tracking-widest"
+          >
+            <span className="flex items-center gap-1.5">
+              <Target className="w-3.5 h-3.5 text-primary" />
+              16 Result Paths
+            </span>
+            <span className="w-1 h-1 rounded-full bg-border" />
+            <span className="flex items-center gap-1.5">
+              <Calculator className="w-3.5 h-3.5 text-primary" />
+              16+ Calculators
+            </span>
+            <span className="hidden sm:inline-flex w-1 h-1 rounded-full bg-border" />
+            <span className="hidden sm:flex items-center gap-1.5">
+              <Star className="w-3.5 h-3.5 text-primary" />
+              100% Personalized
+            </span>
+          </motion.div>
         </motion.div>
 
         {/* Quiz card */}
-        <div className="max-w-2xl mx-auto">
-          <StepIndicator current={step} total={quizSteps.length} showResults={showResults} />
+        <div className="max-w-3xl mx-auto">
+          <ProgressBar current={step} total={quizSteps.length} showResults={showResults} />
 
           <AnimatePresence mode="wait">
             {!showResults ? (
               <motion.div
                 key={`step-${step}`}
-                initial={{ opacity: 0, x: 40, filter: "blur(6px)" }}
+                initial={{ opacity: 0, x: 50, filter: "blur(8px)" }}
                 animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
-                exit={{ opacity: 0, x: -40, filter: "blur(6px)" }}
-                transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                exit={{ opacity: 0, x: -50, filter: "blur(8px)" }}
+                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
               >
                 {/* Question header */}
-                <div className="mb-8">
-                  <p className="text-xs font-display uppercase tracking-[0.2em] text-primary mb-3 font-semibold">
-                    Step {step + 1} of {quizSteps.length}
-                  </p>
-                  <h3 className="text-2xl md:text-3xl font-bold font-display uppercase tracking-tight leading-[1] mb-2">
+                <div className="mb-10">
+                  <div className="flex items-center gap-3 mb-4">
+                    <span className="inline-flex items-center justify-center w-8 h-8 rounded-sm bg-primary text-primary-foreground font-display font-bold text-sm">
+                      {step + 1}
+                    </span>
+                    <div className="h-[1px] flex-1 bg-gradient-to-r from-primary/40 to-transparent" />
+                  </div>
+                  <h3 className="text-3xl md:text-4xl font-bold font-display uppercase tracking-tight leading-[0.95] mb-3">
                     {quizSteps[step].question}
                   </h3>
-                  <p className="text-muted-foreground font-body text-sm md:text-base">
+                  <p className="text-muted-foreground font-body text-sm md:text-base max-w-lg">
                     {quizSteps[step].subtitle}
                   </p>
                 </div>
 
-                {/* Options */}
-                <div className={`grid gap-3 ${quizSteps[step].options.length === 3 ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-1 sm:grid-cols-2"}`}>
+                {/* Options — large visual cards */}
+                <div className={`grid gap-4 ${quizSteps[step].options.length === 3 ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-1 sm:grid-cols-2"}`}>
                   {quizSteps[step].options.map((option, i) => {
                     const isSelected = selectedThisStep === option.value || answers[step] === option.value;
                     return (
                       <motion.button
                         key={option.value}
-                        initial={{ opacity: 0, y: 12 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.35, delay: i * 0.06, ease: [0.16, 1, 0.3, 1] }}
+                        initial={{ opacity: 0, y: 16, filter: "blur(4px)" }}
+                        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                        transition={{ duration: 0.45, delay: i * 0.08, ease: [0.16, 1, 0.3, 1] }}
                         onClick={() => handleSelect(option.value)}
-                        className={`group relative text-left p-5 md:p-6 border rounded-sm transition-all duration-250 ease-out active:scale-[0.96] overflow-hidden ${
+                        className={`group relative text-left rounded-sm transition-all duration-300 ease-out active:scale-[0.96] overflow-hidden ${
                           isSelected
-                            ? "border-primary bg-primary/10 shadow-[0_0_30px_hsl(0_72%_50%/0.2),inset_0_1px_0_hsl(0_72%_50%/0.15)]"
-                            : "border-border bg-card hover:border-primary/40 hover:shadow-[0_4px_20px_hsl(0_0%_0%/0.3)]"
+                            ? "ring-2 ring-primary shadow-[0_0_40px_hsl(var(--primary)/0.25)]"
+                            : "hover:shadow-[0_8px_32px_hsl(0_0%_0%/0.4)]"
                         }`}
                       >
-                        {/* Hover glow */}
-                        <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.06] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-                        <div className="relative z-10">
-                          <div className={`w-10 h-10 rounded-sm flex items-center justify-center mb-3 transition-colors duration-200 ${
-                            isSelected ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground group-hover:text-primary group-hover:bg-primary/10"
-                          }`}>
-                            {option.icon}
+                        {/* Gradient background */}
+                        <div className={`absolute inset-0 bg-gradient-to-br ${option.visual} transition-opacity duration-300 ${isSelected ? "opacity-100" : "opacity-60 group-hover:opacity-100"}`} />
+                        
+                        {/* Card content */}
+                        <div className={`relative z-10 p-6 md:p-7 border rounded-sm transition-colors duration-300 ${
+                          isSelected ? "border-primary bg-primary/5" : "border-border bg-card/80 group-hover:border-primary/40"
+                        }`}>
+                          {/* Icon + stat row */}
+                          <div className="flex items-start justify-between mb-4">
+                            <div className={`w-12 h-12 rounded-sm flex items-center justify-center transition-all duration-300 ${
+                              isSelected 
+                                ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30" 
+                                : "bg-muted text-muted-foreground group-hover:bg-primary/15 group-hover:text-primary"
+                            }`}>
+                              {option.icon}
+                            </div>
+                            {option.stat && (
+                              <span className={`text-[10px] font-display uppercase tracking-widest px-2.5 py-1 rounded-sm border transition-colors duration-300 ${
+                                isSelected 
+                                  ? "bg-primary/15 text-primary border-primary/30" 
+                                  : "bg-muted/50 text-muted-foreground border-border group-hover:text-primary group-hover:border-primary/20"
+                              }`}>
+                                {option.stat}
+                              </span>
+                            )}
                           </div>
-                          <span className={`font-display text-base md:text-lg uppercase tracking-wide font-bold block mb-1 transition-colors duration-200 ${
-                            isSelected ? "text-primary" : "group-hover:text-primary"
+
+                          <span className={`font-display text-lg md:text-xl uppercase tracking-wide font-bold block mb-2 transition-colors duration-200 ${
+                            isSelected ? "text-primary" : "group-hover:text-foreground"
                           }`}>
                             {option.label}
                           </span>
-                          <span className="text-xs text-muted-foreground font-body leading-relaxed block">
+                          <span className="text-sm text-muted-foreground font-body leading-relaxed block">
                             {option.description}
                           </span>
+
+                          {/* Bottom arrow indicator */}
+                          <div className={`flex items-center gap-1.5 mt-4 text-xs font-display uppercase tracking-widest transition-all duration-300 ${
+                            isSelected ? "text-primary" : "text-muted-foreground/0 group-hover:text-muted-foreground"
+                          }`}>
+                            <span>Select</span>
+                            <ChevronRight className="w-3.5 h-3.5" />
+                          </div>
                         </div>
 
-                        {/* Selection indicator */}
+                        {/* Selection overlay */}
                         {isSelected && (
                           <motion.div
-                            layoutId="selected-check"
-                            className="absolute top-3 right-3"
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
                             transition={{ type: "spring", stiffness: 500, damping: 20 }}
+                            className="absolute top-4 right-4 z-20"
                           >
-                            <CheckCircle2 className="w-5 h-5 text-primary" />
+                            <CheckCircle2 className="w-6 h-6 text-primary drop-shadow-lg" />
                           </motion.div>
                         )}
                       </motion.button>
@@ -643,9 +824,9 @@ const FitnessQuiz = () => {
                   <motion.button
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    transition={{ delay: 0.2 }}
+                    transition={{ delay: 0.3 }}
                     onClick={handleBack}
-                    className="mt-8 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground font-display uppercase tracking-widest transition-colors duration-200 active:scale-[0.97]"
+                    className="mt-10 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground font-display uppercase tracking-widest transition-colors duration-200 active:scale-[0.97]"
                   >
                     <ArrowLeft className="w-4 h-4" />
                     Back
@@ -654,27 +835,29 @@ const FitnessQuiz = () => {
               </motion.div>
             ) : (
               /* -------------------------------------------------------- */
-              /*  Results                                                  */
+              /*  Results — premium card                                   */
               /* -------------------------------------------------------- */
               <motion.div
                 key="results"
-                initial={{ opacity: 0, y: 24, filter: "blur(6px)" }}
+                initial={{ opacity: 0, y: 30, filter: "blur(8px)" }}
                 animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
+                transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
               >
-                <div className="bg-card border border-border rounded-sm overflow-hidden">
-                  {/* Results header */}
-                  <div className="relative px-8 pt-8 pb-6 md:px-10 md:pt-10 md:pb-8 border-b border-border overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.08] via-transparent to-transparent" />
+                <div className="bg-card border border-border rounded-sm overflow-hidden shadow-2xl shadow-primary/5">
+                  {/* Results header — dramatic gradient */}
+                  <div className="relative px-8 pt-10 pb-8 md:px-12 md:pt-12 md:pb-10 overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.12] via-primary/[0.04] to-transparent" />
+                    <div className="absolute top-0 right-0 w-48 h-48 bg-primary/[0.08] rounded-full blur-[60px]" />
+
                     <div className="relative z-10">
                       <motion.div
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.15, duration: 0.5 }}
-                        className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary/15 border border-primary/30 rounded-sm mb-4"
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-primary/15 border border-primary/30 rounded-sm mb-5"
                       >
-                        <Sparkles className="w-3.5 h-3.5 text-primary" />
-                        <span className="text-[11px] font-display uppercase tracking-[0.2em] text-primary font-bold">
+                        <Sparkles className="w-4 h-4 text-primary" />
+                        <span className="text-xs font-display uppercase tracking-[0.2em] text-primary font-bold">
                           Your Personalized Results
                         </span>
                       </motion.div>
@@ -683,7 +866,7 @@ const FitnessQuiz = () => {
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.25, duration: 0.5 }}
-                        className="text-3xl md:text-4xl font-bold font-display uppercase tracking-tight leading-[0.95] mb-2"
+                        className="text-3xl md:text-5xl font-bold font-display uppercase tracking-tight leading-[0.9] mb-3"
                       >
                         {recommendation!.title}
                       </motion.h3>
@@ -691,132 +874,143 @@ const FitnessQuiz = () => {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.35, duration: 0.5 }}
-                        className="text-sm text-primary/80 font-display uppercase tracking-wider font-medium"
+                        className="text-sm md:text-base text-primary/80 font-display uppercase tracking-wider font-medium"
                       >
                         {recommendation!.subtitle}
                       </motion.p>
                     </div>
+
+                    {/* Divider */}
+                    <div className="absolute bottom-0 left-8 right-8 md:left-12 md:right-12 h-[1px] bg-gradient-to-r from-transparent via-border to-transparent" />
                   </div>
 
-                  <div className="px-8 py-8 md:px-10 md:py-10 space-y-8">
+                  <div className="px-8 py-10 md:px-12 md:py-12 space-y-10">
                     {/* Description */}
                     <motion.p
                       initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.4, duration: 0.5 }}
-                      className="text-muted-foreground font-body text-base md:text-lg leading-relaxed"
+                      className="text-muted-foreground font-body text-base md:text-lg leading-relaxed max-w-2xl"
                     >
                       {recommendation!.description}
                     </motion.p>
 
-                    {/* Pro tip */}
+                    {/* Pro tip — highlighted */}
                     <motion.div
                       initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.5, duration: 0.5 }}
-                      className="flex gap-3 p-4 bg-primary/[0.06] border border-primary/15 rounded-sm"
+                      className="relative p-5 md:p-6 bg-primary/[0.06] border-l-4 border-l-primary border border-primary/15 rounded-sm"
                     >
-                      <Zap className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                      <div>
-                        <span className="text-xs font-display uppercase tracking-widest text-primary font-bold block mb-1">
-                          Pro Tip
-                        </span>
-                        <p className="text-sm text-muted-foreground font-body leading-relaxed">
-                          {recommendation!.tip}
-                        </p>
+                      <div className="flex gap-3">
+                        <Zap className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                        <div>
+                          <span className="text-xs font-display uppercase tracking-[0.2em] text-primary font-bold block mb-1.5">
+                            Pro Tip
+                          </span>
+                          <p className="text-sm md:text-base text-muted-foreground font-body leading-relaxed">
+                            {recommendation!.tip}
+                          </p>
+                        </div>
                       </div>
                     </motion.div>
 
-                    {/* Recommended articles */}
-                    <motion.div
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.55, duration: 0.5 }}
-                    >
-                      <h4 className="text-xs font-display uppercase tracking-[0.2em] text-foreground mb-4 font-bold flex items-center gap-2">
-                        <span className="w-6 h-[2px] bg-primary inline-block" />
-                        Recommended Reading
-                      </h4>
-                      <div className="space-y-2">
-                        {recommendation!.links.map((link, i) => (
-                          <motion.a
-                            key={link.url}
-                            href={link.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            initial={{ opacity: 0, x: -8 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.6 + i * 0.07, duration: 0.4 }}
-                            className="group flex items-center justify-between p-4 border border-border rounded-sm hover:border-primary/40 hover:bg-primary/[0.04] transition-all duration-200 active:scale-[0.98]"
-                          >
-                            <div className="flex items-center gap-3 min-w-0">
-                              <span className="font-body font-medium text-sm md:text-base group-hover:text-primary transition-colors duration-200 truncate">
-                                {link.label}
-                              </span>
-                              {link.tag && (
-                                <span className="hidden sm:inline-flex text-[10px] font-display uppercase tracking-widest px-2 py-0.5 bg-primary/10 text-primary border border-primary/20 rounded-sm whitespace-nowrap flex-shrink-0">
-                                  {link.tag}
+                    {/* Two-column layout for links + calculators */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                      {/* Recommended articles */}
+                      <motion.div
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.55, duration: 0.5 }}
+                      >
+                        <h4 className="text-xs font-display uppercase tracking-[0.2em] text-foreground mb-5 font-bold flex items-center gap-2">
+                          <span className="w-8 h-[2px] bg-primary inline-block" />
+                          Recommended Reading
+                        </h4>
+                        <div className="space-y-2.5">
+                          {recommendation!.links.map((link, i) => (
+                            <motion.a
+                              key={link.url}
+                              href={link.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              initial={{ opacity: 0, x: -12 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: 0.6 + i * 0.08, duration: 0.4 }}
+                              className="group flex items-center justify-between p-4 border border-border rounded-sm hover:border-primary/40 hover:bg-primary/[0.04] transition-all duration-200 active:scale-[0.98]"
+                            >
+                              <div className="flex items-center gap-3 min-w-0">
+                                <div className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0" />
+                                <span className="font-body font-medium text-sm group-hover:text-primary transition-colors duration-200 truncate">
+                                  {link.label}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2 flex-shrink-0 ml-3">
+                                {link.tag && (
+                                  <span className="hidden sm:inline-flex text-[10px] font-display uppercase tracking-widest px-2 py-0.5 bg-primary/10 text-primary border border-primary/20 rounded-sm whitespace-nowrap">
+                                    {link.tag}
+                                  </span>
+                                )}
+                                <ExternalLink className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors duration-200" />
+                              </div>
+                            </motion.a>
+                          ))}
+                        </div>
+                      </motion.div>
+
+                      {/* Recommended calculators */}
+                      <motion.div
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.65, duration: 0.5 }}
+                      >
+                        <h4 className="text-xs font-display uppercase tracking-[0.2em] text-foreground mb-5 font-bold flex items-center gap-2">
+                          <span className="w-8 h-[2px] bg-primary inline-block" />
+                          Crunch Your Numbers
+                        </h4>
+                        <div className="space-y-2.5">
+                          {recommendation!.calculators.map((calc, i) => (
+                            <motion.a
+                              key={calc.url}
+                              href={calc.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              initial={{ opacity: 0, x: -12 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: 0.7 + i * 0.07, duration: 0.35 }}
+                              className="group flex items-center justify-between p-4 bg-primary/[0.04] border border-primary/15 rounded-sm hover:bg-primary/[0.08] hover:border-primary/30 transition-all duration-200 active:scale-[0.97]"
+                            >
+                              <div className="flex items-center gap-3 min-w-0">
+                                <Calculator className="w-4 h-4 text-primary/70 flex-shrink-0" />
+                                <span className="font-display text-sm uppercase tracking-wide font-semibold group-hover:text-primary transition-colors duration-200 truncate">
+                                  {calc.label}
+                                </span>
+                              </div>
+                              {calc.tag && (
+                                <span className="text-[10px] font-display uppercase tracking-widest px-2.5 py-0.5 bg-primary/15 text-primary rounded-sm whitespace-nowrap flex-shrink-0 ml-2">
+                                  {calc.tag}
                                 </span>
                               )}
-                            </div>
-                            <ExternalLink className="w-4 h-4 text-muted-foreground group-hover:text-primary flex-shrink-0 ml-3 transition-colors duration-200" />
-                          </motion.a>
-                        ))}
-                      </div>
-                    </motion.div>
-
-                    {/* Recommended calculators */}
-                    <motion.div
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.7, duration: 0.5 }}
-                    >
-                      <h4 className="text-xs font-display uppercase tracking-[0.2em] text-foreground mb-4 font-bold flex items-center gap-2">
-                        <span className="w-6 h-[2px] bg-primary inline-block" />
-                        Crunch Your Numbers
-                      </h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        {recommendation!.calculators.map((calc, i) => (
-                          <motion.a
-                            key={calc.url}
-                            href={calc.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ delay: 0.75 + i * 0.06, duration: 0.35 }}
-                            className="group flex items-center justify-between p-4 bg-primary/[0.04] border border-primary/15 rounded-sm hover:bg-primary/[0.08] hover:border-primary/30 transition-all duration-200 active:scale-[0.97]"
-                          >
-                            <div className="flex items-center gap-2 min-w-0">
-                              <Calculator className="w-4 h-4 text-primary/60 flex-shrink-0" />
-                              <span className="font-display text-sm uppercase tracking-wide font-semibold group-hover:text-primary transition-colors duration-200 truncate">
-                                {calc.label}
-                              </span>
-                            </div>
-                            {calc.tag && (
-                              <span className="text-[10px] font-display uppercase tracking-widest px-2 py-0.5 bg-primary/15 text-primary rounded-sm whitespace-nowrap flex-shrink-0 ml-2">
-                                {calc.tag}
-                              </span>
-                            )}
-                          </motion.a>
-                        ))}
-                      </div>
-                    </motion.div>
+                            </motion.a>
+                          ))}
+                        </div>
+                      </motion.div>
+                    </div>
 
                     {/* Actions */}
                     <motion.div
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ delay: 0.9, duration: 0.4 }}
-                      className="flex flex-col sm:flex-row items-start sm:items-center gap-4 pt-4 border-t border-border"
+                      className="flex flex-col sm:flex-row items-start sm:items-center gap-4 pt-6 border-t border-border"
                     >
                       <a
                         href="https://fitness-calculators.gearuptofit.com/"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 px-6 py-3 bg-primary font-display text-sm uppercase tracking-wider font-semibold transition-all duration-200 hover:brightness-110 active:scale-[0.97] glow-red rounded-sm"
+                        className="inline-flex items-center gap-2 px-7 py-3.5 bg-primary font-display text-sm uppercase tracking-wider font-bold transition-all duration-200 hover:brightness-110 active:scale-[0.97] glow-red rounded-sm text-primary-foreground"
                       >
-                        All Calculators
+                        Explore All Calculators
                         <ArrowRight className="w-4 h-4" />
                       </a>
                       <button
