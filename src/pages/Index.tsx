@@ -1,10 +1,11 @@
 import SiteHeader from "@/components/SiteHeader";
 import HeroSection from "@/components/HeroSection";
+import FitnessQuiz from "@/components/FitnessQuiz";
 import CategoryPillars from "@/components/CategoryPillars";
 import FeaturedArticle from "@/components/FeaturedArticle";
 import TrendingSection from "@/components/TrendingSection";
 import DeepDiveSection from "@/components/DeepDiveSection";
-import ToolsSection from "@/components/ToolsSection";
+import CalculatorsHub from "@/components/CalculatorsHub";
 import CTASection from "@/components/CTASection";
 import SiteFooter from "@/components/SiteFooter";
 
@@ -14,11 +15,12 @@ const Index = () => {
       <SiteHeader />
       <main>
         <HeroSection />
+        <FitnessQuiz />
         <CategoryPillars />
         <FeaturedArticle />
         <TrendingSection />
         <DeepDiveSection />
-        <ToolsSection />
+        <CalculatorsHub />
         <CTASection />
       </main>
       <SiteFooter />

@@ -22,7 +22,13 @@ const SiteHeader = () => {
 
         {/* Nav links - desktop */}
         <nav className="hidden md:flex items-center gap-1">
-          {categories.map((cat) => (
+          <a
+            href="#quiz"
+            className="px-3 py-2 text-xs font-display uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors duration-200"
+          >
+            Quiz
+          </a>
+          {categories.slice(0, 4).map((cat) => (
             <a
               key={cat.slug}
               href={cat.url}
@@ -33,6 +39,12 @@ const SiteHeader = () => {
               {cat.name}
             </a>
           ))}
+          <a
+            href="#calculators"
+            className="px-3 py-2 text-xs font-display uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors duration-200"
+          >
+            Calculators
+          </a>
         </nav>
 
         {/* CTA */}
