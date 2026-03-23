@@ -191,7 +191,7 @@ const LiveTicker = () => {
         >
           <div className="flex items-center gap-3">
             <LivePulse />
-            <h2 className="text-2xl md:text-3xl font-bold uppercase tracking-tight font-display">
+            <h2 className="text-lg sm:text-2xl md:text-3xl font-bold uppercase tracking-tight font-display">
               Latest from GearUpToFit
             </h2>
             <span className="hidden sm:inline-flex px-2 py-0.5 text-[10px] font-display uppercase tracking-widest bg-primary/15 text-primary border border-primary/30 rounded-sm font-semibold">
